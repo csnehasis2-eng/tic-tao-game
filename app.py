@@ -2,99 +2,225 @@
 import streamlit as st
 import numpy as np
 
-# ---------------- PAGE CONFIG ----------------
-
 st.set_page_config(
-    page_title="Tic Tac Toe",
+    page_title="Tic Tac Toe | Arena",
     page_icon="🎮",
     layout="centered"
 )
 
-# ---------------- CUSTOM CSS ----------------
+# ---------------- CSS ----------------
 
 st.markdown("""
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+* {
+    font-family: 'Inter', sans-serif;
+}
+
 .stApp {
-    background: #0B1120;
-    color: white;
+    background:
+        radial-gradient(ellipse at 15% 10%, #182b50 0%, transparent 38%),
+        radial-gradient(ellipse at 85% 80%, #241b49 0%, transparent 38%),
+        #080d19;
+    color: #f8fafc;
+}
+
+header, footer, #MainMenu {
+    visibility: hidden;
 }
 
 .block-container {
-    max-width: 650px;
-    padding-top: 2rem;
+    max-width: 680px;
+    padding: 35px 20px 40px;
 }
 
-h1, h2, h3, p {
-    color: white;
-}
-
-.game-title {
+.hero {
     text-align: center;
-    font-size: 42px;
+    margin-bottom: 32px;
+}
+
+.logo {
+    display: inline-block;
+    padding: 8px 16px;
+    border: 1px solid #334c72;
+    border-radius: 30px;
+    background: #14213a;
+    color: #93c5fd;
+    font-size: 11px;
     font-weight: 800;
     letter-spacing: 3px;
-    margin-bottom: 0;
+    margin-bottom: 17px;
 }
 
-.subtitle {
+.hero h1 {
+    font-size: clamp(38px, 8vw, 55px);
+    font-weight: 900;
+    letter-spacing: -3px;
+    margin: 0;
+    background: linear-gradient(90deg, #ffffff, #93c5fd, #c4b5fd);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero p {
+    color: #8190a9;
+    font-size: 13px;
+    margin-top: 10px;
+}
+
+.players {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 13px;
+    margin-bottom: 22px;
+}
+
+.player {
+    padding: 17px;
+    background: rgba(22, 34, 57, 0.8);
+    border: 1px solid #293a57;
+    border-radius: 18px;
     text-align: center;
-    color: #94A3B8;
-    margin-bottom: 30px;
-}
-
-.turn-card {
-    background: #172033;
-    padding: 18px;
-    border-radius: 15px;
-    text-align: center;
-    border: 1px solid #26344D;
-    margin-bottom: 20px;
-}
-
-.cell {
-    font-size: 38px;
-    font-weight: 800;
-}
-
-div.stButton > button {
-    width: 100%;
-    height: 100px;
-    border-radius: 16px;
-    background: #172033;
-    border: 1px solid #334155;
-    color: white;
-    font-size: 38px;
-    font-weight: bold;
     transition: 0.2s;
 }
 
-div.stButton > button:hover {
-    background: #25334D;
-    border-color: #60A5FA;
+.player.active-x {
+    border-color: #38bdf8;
+    box-shadow: 0 0 22px rgba(56,189,248,.12);
+}
+
+.player.active-o {
+    border-color: #c084fc;
+    box-shadow: 0 0 22px rgba(192,132,252,.12);
+}
+
+.player-icon {
+    font-size: 28px;
+    font-weight: 900;
+}
+
+.x-color { color: #38bdf8; }
+.o-color { color: #c084fc; }
+
+.player-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-top: 7px;
+}
+
+.player-status {
+    color: #8291aa;
+    font-size: 10px;
+    margin-top: 5px;
+    letter-spacing: 1px;
+}
+
+.status {
+    background: rgba(20, 32, 53, .9);
+    border: 1px solid #293a57;
+    padding: 15px;
+    text-align: center;
+    border-radius: 14px;
+    margin-bottom: 19px;
+    color: #cbd5e1;
+    font-size: 14px;
+}
+
+.game-wrapper {
+    background: linear-gradient(145deg, #17243b, #10192b);
+    padding: 15px;
+    border: 1px solid #33445f;
+    border-radius: 24px;
+    box-shadow: 0 20px 65px rgba(0,0,0,.4);
+}
+
+div[data-testid="stHorizontalBlock"] {
+    gap: 10px;
+}
+
+div.stButton > button {
+    height: clamp(85px, 19vw, 125px);
+    width: 100%;
+    border-radius: 17px;
+    background: linear-gradient(145deg, #1b2b46, #142139);
+    border: 1px solid #354765;
+    color: #f8fafc;
+    font-size: clamp(35px, 8vw, 49px);
+    font-weight: 900;
+    box-shadow: 0 5px 12px rgba(0,0,0,.22);
+    transition: all .2s ease;
+}
+
+div.stButton > button:hover:not(:disabled) {
+    background: linear-gradient(145deg, #263d60, #1c3050);
+    border: 1px solid #60a5fa;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 22px rgba(56,189,248,.15);
     color: white;
 }
 
 div.stButton > button:disabled {
     opacity: 1;
-    background: #1E293B;
-    color: #60A5FA;
-    border-color: #334155;
+    cursor: default;
+    background: #18263e;
+    border-color: #30435e;
 }
 
-div.stButton > button:focus:not(:active) {
-    border-color: #60A5FA;
+div.stButton > button:focus {
+    box-shadow: none;
+    outline: none;
+}
+
+div[data-testid="stButton"]:has(button:disabled) {
+    cursor: default;
+}
+
+div[data-testid="stMetric"] {
+    background: rgba(22,34,57,.8);
+    border: 1px solid #293a57;
+    padding: 13px 16px;
+    border-radius: 15px;
+}
+
+div[data-testid="stMetricLabel"] {
+    color: #94a3b8;
+}
+
+div[data-testid="stMetricValue"] {
     color: white;
-}
-
-div.stButton > button:active {
-    background: #334155;
+    font-weight: 800;
 }
 
 div.stButton > button[kind="primary"] {
-    background: #2563EB;
+    height: 53px;
+    background: linear-gradient(90deg, #2563eb, #7c3aed);
     border: none;
+    color: white;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    border-radius: 13px;
+    box-shadow: 0 7px 25px rgba(79,70,229,.25);
 }
 
+.footer {
+    text-align: center;
+    color: #53627c;
+    font-size: 10px;
+    letter-spacing: 2px;
+    margin-top: 30px;
+}
+
+@media(max-width: 480px) {
+    .block-container {
+        padding: 25px 12px;
+    }
+    .game-wrapper {
+        padding: 10px;
+    }
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -103,22 +229,22 @@ div.stButton > button[kind="primary"] {
 
 def check_winner(b):
     for i in range(3):
-        if abs(np.sum(b[i, :])) == 3:
-            return "X" if np.sum(b[i, :]) == 3 else "O"
+        row_sum = np.sum(b[i, :])
+        col_sum = np.sum(b[:, i])
 
-        if abs(np.sum(b[:, i])) == 3:
-            return "X" if np.sum(b[:, i]) == 3 else "O"
+        if row_sum == 3 or col_sum == 3:
+            return "X"
 
-    if np.trace(b) == 3:
+        if row_sum == -3 or col_sum == -3:
+            return "O"
+
+    d1 = np.trace(b)
+    d2 = np.trace(np.fliplr(b))
+
+    if d1 == 3 or d2 == 3:
         return "X"
-    if np.trace(b) == -3:
-        return "O"
 
-    diagonal = np.trace(np.fliplr(b))
-
-    if diagonal == 3:
-        return "X"
-    if diagonal == -3:
+    if d1 == -3 or d2 == -3:
         return "O"
 
     if not np.any(b == 0):
@@ -138,6 +264,9 @@ if "current" not in st.session_state:
 if "result" not in st.session_state:
     st.session_state.result = None
 
+if "scores" not in st.session_state:
+    st.session_state.scores = {"X": 0, "O": 0, "DRAW": 0}
+
 
 def reset_game():
     st.session_state.board = np.zeros((3, 3), dtype=int)
@@ -145,127 +274,143 @@ def reset_game():
     st.session_state.result = None
 
 
-def make_move(row, col):
+def make_move(r, c):
     if st.session_state.result is not None:
         return
 
-    board = st.session_state.board
-
-    if board[row, col] != 0:
+    if st.session_state.board[r, c] != 0:
         return
 
-    board[row, col] = st.session_state.current
+    st.session_state.board[r, c] = st.session_state.current
 
-    st.session_state.result = check_winner(board)
+    result = check_winner(st.session_state.board)
+    st.session_state.result = result
 
-    if st.session_state.result is None:
+    if result:
+        st.session_state.scores[result] += 1
+    else:
         st.session_state.current *= -1
 
 
 # ---------------- HEADER ----------------
 
-st.markdown(
-    '<div class="game-title">TIC TAC TOE</div>',
-    unsafe_allow_html=True
-)
-
-st.markdown(
-    '<div class="subtitle">Challenge your friend. Make your move.</div>',
-    unsafe_allow_html=True
-)
+st.markdown("""
+<div class="hero">
+    <div class="logo">✦ GAME ARENA</div>
+    <h1>TIC TAC TOE</h1>
+    <p>THINK SMART. PLAY BOLD. OWN THE GRID.</p>
+</div>
+""", unsafe_allow_html=True)
 
 
-# ---------------- TURN STATUS ----------------
+# ---------------- PLAYER CARDS ----------------
 
-result = st.session_state.result
 current = st.session_state.current
+result = st.session_state.result
+
+x_active = current == 1 and result is None
+o_active = current == -1 and result is None
+
+st.markdown(f"""
+<div class="players">
+    <div class="player {'active-x' if x_active else ''}">
+        <div class="player-icon x-color">X</div>
+        <div class="player-name">PLAYER ONE</div>
+        <div class="player-status">
+            {'● YOUR TURN' if x_active else 'PLAYER 01'}
+        </div>
+    </div>
+    <div class="player {'active-o' if o_active else ''}">
+        <div class="player-icon o-color">O</div>
+        <div class="player-name">PLAYER TWO</div>
+        <div class="player-status">
+            {'● YOUR TURN' if o_active else 'PLAYER 02'}
+        </div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+
+# ---------------- GAME STATUS ----------------
 
 if result is None:
     player = "X" if current == 1 else "O"
-
-    st.markdown(
-        f"""
-        <div class="turn-card">
-            <h3 style="margin:0;">Player {player}'s Turn</h3>
-            <p style="margin:5px 0 0;color:#94A3B8;">
-                {'Blue' if player == 'X' else 'Orange'} is playing
-            </p>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
+    status_text = f"⚡ PLAYER {player} — IT'S YOUR TURN"
 elif result == "DRAW":
-    st.markdown("""
-    <div class="turn-card">
-        <h2>🤝 It's a Draw!</h2>
-        <p style="color:#94A3B8;">Nobody wins this round.</p>
-    </div>
-    """, unsafe_allow_html=True)
-
+    status_text = "🤝 MATCH DRAW — WELL PLAYED!"
 else:
-    st.markdown(f"""
-    <div class="turn-card">
-        <h2>🏆 Player {result} Wins!</h2>
-        <p style="color:#94A3B8;">Congratulations!</p>
-    </div>
-    """, unsafe_allow_html=True)
+    status_text = f"🏆 PLAYER {result} WINS THE MATCH!"
+
+st.markdown(
+    f'<div class="status">{status_text}</div>',
+    unsafe_allow_html=True
+)
 
 
-# ---------------- GAME BOARD ----------------
+# ---------------- BOARD ----------------
+
+st.markdown('<div class="game-wrapper">', unsafe_allow_html=True)
 
 board = st.session_state.board
 
-for row in range(3):
+for r in range(3):
     cols = st.columns(3, gap="small")
 
-    for col in range(3):
-        value = board[row, col]
+    for c in range(3):
+        value = board[r, c]
 
-        if value == 1:
-            symbol = "X"
-        elif value == -1:
-            symbol = "O"
-        else:
-            symbol = " "
+        symbol = " " if value == 0 else ("X" if value == 1 else "O")
 
-        with cols[col]:
+        with cols[c]:
             st.button(
                 symbol,
-                key=f"cell_{row}_{col}",
+                key=f"cell_{r}_{c}",
+                use_container_width=True,
                 disabled=(value != 0 or result is not None),
                 on_click=make_move,
-                args=(row, col),
-                use_container_width=True
+                args=(r, c)
             )
 
+st.markdown('</div>', unsafe_allow_html=True)
 
-# ---------------- SCORE / CONTROLS ----------------
+
+# ---------------- SCOREBOARD ----------------
 
 st.markdown("<br>", unsafe_allow_html=True)
+st.markdown("### 🏅 MATCH SCOREBOARD")
 
-x_count = np.count_nonzero(board == 1)
-o_count = np.count_nonzero(board == -1)
+s1, s2, s3 = st.columns(3)
 
-score1, score2 = st.columns(2)
+with s1:
+    st.metric("PLAYER X", st.session_state.scores["X"])
 
-with score1:
-    st.metric("PLAYER X", x_count)
+with s2:
+    st.metric("DRAWS", st.session_state.scores["DRAW"])
 
-with score2:
-    st.metric("PLAYER O", o_count)
+with s3:
+    st.metric("PLAYER O", st.session_state.scores["O"])
+
+
+# ---------------- CONTROLS ----------------
 
 st.markdown("<br>", unsafe_allow_html=True)
 
 st.button(
-    "🔄  NEW GAME",
-    on_click=reset_game,
+    "↻   PLAY AGAIN",
     type="primary",
-    use_container_width=True
+    use_container_width=True,
+    on_click=reset_game
 )
 
+if st.button("RESET ALL SCORES", use_container_width=True):
+    st.session_state.scores = {"X": 0, "O": 0, "DRAW": 0}
+    reset_game()
+
+# ---------------- FOOTER ----------------
+
 st.markdown("""
-<p style="text-align:center;color:#64748B;font-size:12px;margin-top:25px;">
-    BUILT WITH PYTHON • NUMPY • STREAMLIT
-</p>
+<div class="footer">
+    BUILT WITH PYTHON & NUMPY<br><br>
+    GAME ARENA © 2026
+</div>
 """, unsafe_allow_html=True)
